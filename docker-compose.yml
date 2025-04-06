@@ -1,0 +1,16 @@
+services:
+  auth_node:
+    container_name: node_auth_service
+    build: ./node_auth_service
+    ports:
+      - "4000:4000"
+    environment:
+      - JWT_SECRET=mysecretkey123
+
+  gateway:
+    build: ./nginx_gateway
+    container_name: nginx_gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - auth_node
