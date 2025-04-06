@@ -6,6 +6,22 @@ services:
       - "4000:4000"
     environment:
       - JWT_SECRET=mysecretkey123
+    networks:
+      - app_network
+
+  django_web:
+    build: ./django_drf_service
+    container_name: django_web
+    volumes:
+      - ./django_drf_service:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - django_db
+    environment:
+      - DEBUG=1
+    networks:
+      - app_network
 
   gateway:
     build: ./nginx_gateway
@@ -14,3 +30,28 @@ services:
       - "80:80"
     depends_on:
       - auth_node
+      - django_web
+    networks:
+      - app_network
+
+  django_db:
+    image: postgres:14
+    container_name: django_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
